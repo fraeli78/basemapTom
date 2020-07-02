@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <title>Page Title</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+    integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+    crossorigin=""/>
+
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+    integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+    crossorigin=""></script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"
+    integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"></script>
+
+    <!-- Load Esri Leaflet from CDN -->
+    <script src="https://unpkg.com/esri-leaflet@2.4.1/dist/esri-leaflet.js"
+    integrity="sha512-xY2smLIHKirD03vHKDJ2u4pqeHA7OQZZ27EjtqmuhDguxiUvdsOuXMwkg16PQrm9cgTmXtoxA6kwr8KBy3cdcw=="
+    crossorigin=""></script>
+
+    <!-- bootstrap 4.3.1 -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+  <style>
+
+    body {
+      padding: 0;
+      margin: 0;
+    }
+
+    html, body, #map {
+      height: 100%;
+      width: 100%;
+    }
+    #selector_menu{
+      position: absolute;
+      top: 30px;
+      left: 100px;
+      z-index: 9000;
+    }
+    div.dataTables_scrollHead table.display {
+      background-color: #444;
+      color: #eee;
+    }
+    a.popup {
+        color: white;
+    }
+    a.popup:hover {
+        color: yellow !important;
+    }
+    a.btn-light{
+    color:#c0c0c0 !important;
+    }
+    h4 {
+        letter-spacing: 2px;
+    }
+
+  </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script>
+        var markerGroup = new L.featureGroup([]);
+            var map = L.map('map', {
+              center: [43.64403,-50.82892],
+              zoom: 3.5,
+              maxBounds: [
+                [57.46859,-113.23127],
+                [25.72074,11.57342]
+              ],
+              zoomControl: false,
+              scrollWheelZoom: false,
+              doubleClickZoom: false,
+              boxZoom: false,
+              keyboard: false
+            });
+
+
+        L.esri.basemapLayer('Topographic').addTo(map);
+
+
+        function formatUrl(url){
+            if (!!url && !!url.trim()) { //Check if url is not blank
+                url = url.trim(); //Removes blank spaces from start and end
+                if (!/^(https?:)?\/\//i.test(url)) { //Checks for if url doesn't match either of: http://example.com, https://example.com AND //example.com
+                    url = 'http://' + url; //Prepend http:// to the URL
+                }
+            }            
+            return url;
+        }
+
+
+      var redIcon = new L.Icon({
+          iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+      });
+      var goldIcon = new L.Icon({
+          iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+      });
+
+
+    $.get('data/universities.csv', function(data) {
+
+      var lines = data.split('\n');
+
+      for (var i = 0; i < lines.length; i++) {
+
+        var singleLine = lines[i].split(',');
+        var lat = parseFloat(singleLine[0]);
+        var lon = parseFloat(singleLine[1]);
+        var name = singleLine[7];
+        var address = singleLine[3];
+        var email = singleLine[11];
+        var website = singleLine[10];
+        var city = singleLine[4];
+        var state = singleLine[5];
+        var zipcode = singleLine[6];
+        var country = singleLine[2];
+
+        var popupContent = '<h4>' + name + '</h4>'+ '<br>'
+            + '<b>ADDRESS & CONTACT</b>: ' + 
+            '<br>' + address  + ' ' + city + '</br>'
+             + state + ' ' + zipcode  +
+           '<br>' + country + 
+            '<br>';
+
+            if(website!=''){
+                popupContent += '<br>'+ '<a class="btn btn-dark popup" href="' + formatUrl(website) + '" target=_blank>WEBSITE</a>';}else{
+                    popupContent += '<br>'+ '<a class="btn btn-light">WEBSITE</a>';
+                }
+
+            if(email!=''){
+                popupContent += ' '+ '<a class="btn btn-dark popup" href="mailto:' + email + '">EMAIL</a>';}else{
+                    popupContent += ' '+ '<a class="btn btn-light">EMAIL</a>';
+                };
+//          popupContent += '<br><br><b>City</b>: ' + city + '<br>';
+
+        L.featureGroup([
+              L.marker([lat, lon],{
+                  icon: redIcon
+              })
+          ]).addTo(markerGroup).bindPopup(popupContent, {
+//                   minWidth: 150,
+//                   maxWidth: 200,
+//                   maxHeight: 150
+          }).addTo(map).on('mouseover', function(e){
+              this.openPopup();
+              e.layer.setIcon(goldIcon);
+          }).on('popupclose', function (e) {
+              e.layer.setIcon(redIcon);
+          });  
+
+      }
+
+    });
+
+
+    </script>
+
+</body>
+</html>
