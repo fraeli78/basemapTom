@@ -56,8 +56,35 @@
     a.btn-light{
     color:#c0c0c0 !important;
     }
-    h4 {
-        letter-spacing: 2px;
+      
+    h5 {
+        letter-spacing: 1px;
+    }
+      
+    .leaflet-popup-content-wrapper {
+        border-radius: 0;
+        background: white;
+        color: black;
+        opacity: 0.9;
+/*        font-size: 20px;*/
+    }
+    .leaflet-popup-content {
+        margin: 12px;
+    }
+    .leaflet-popup-tip {
+        background: black;
+    }
+/*
+    .leaflet-popup-close-button {
+        display: none;
+    }
+*/
+    div.imgPopup {
+        width: 200px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        height: 150px;
     }
 
   </style>
@@ -71,7 +98,7 @@
               center: [43.64403,-50.82892],
               zoom: 3.5,
               maxBounds: [
-                [60,-160],
+                [80,-160],
                 [-10, 80]
               ],
               zoomControl: false,
@@ -91,7 +118,7 @@
                 if (!/^(https?:)?\/\//i.test(url)) { //Checks for if url doesn't match either of: http://example.com, https://example.com AND //example.com
                     url = 'http://' + url; //Prepend http:// to the URL
                 }
-            }            
+            }
             return url;
         }
 
@@ -113,6 +140,11 @@
           shadowSize: [41, 41]
       });
 
+        
+//        L.marker([0, 0]).bindPopup('<object data="https://www.youtube.com/embed/hqKQoZ_ySwA" width="190" height="140"></object>', {
+//            maxWidth : 200,
+//            maxHeight : 150
+//        }).addTo(map);
 
     $.get('data/universities.csv', function(data) {
 
@@ -131,12 +163,20 @@
         var state = singleLine[5];
         var zipcode = singleLine[6];
         var country = singleLine[2];
+        var photoVideo = singleLine[12];
 
-        var popupContent = '<h4>' + name + '</h4>'+ '<br>'
-            + '<b>ADDRESS & CONTACT</b>: ' + 
-            '<br>' + address  + ' ' + city + '</br>'
-             + state + ' ' + zipcode  +
-           '<br>' + country + 
+        var popupContent = '<h5>' + name + '</h5>'+  
+            
+//            '<div class="imgPopup"  style="background-image:url(' + photoVideo + ')"/></div><br>'+ 
+            
+            '<object data="' + photoVideo + '" width="190" height="140"></object>' +
+            
+//            <object data="https://www.youtube.com/embed/hqKQoZ_ySwA" width="190" height="140"></object>
+            ////////////////
+            '<b>ADDRESS & CONTACT</b>: ' +      
+            '<br>' + address  + ' ' + city + '</br>'+ 
+            state + ' ' + zipcode  +
+            '<br>' + country +
             '<br>';
 
             if(website!=''){
@@ -155,20 +195,19 @@
                   icon: redIcon
               })
           ]).addTo(markerGroup).bindPopup(popupContent, {
-//                   minWidth: 150,
-//                   maxWidth: 200,
-//                   maxHeight: 150
+                  // minWidth: 150,
+                   maxWidth: 200,
+                  // maxHeight: 150
           }).addTo(map).on('mouseover', function(e){
               this.openPopup();
               e.layer.setIcon(goldIcon);
           }).on('popupclose', function (e) {
               e.layer.setIcon(redIcon);
-          });  
+          });
 
       }
 
     });
-
 
     </script>
 
